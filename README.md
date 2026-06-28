@@ -1,77 +1,110 @@
-# React + TypeScript + Vite
+# 📝 Todo List with React + MirageJS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A simple Todo List application built with **React**, **TypeScript**, **Axios**, and **MirageJS** to simulate a REST API.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Features
+- Add new tasks  
+- Mark tasks as completed  
+- Delete tasks  
+- Temporary persistence using `localStorage`  
+- Mock API powered by MirageJS intercepting HTTP requests  
 
-## React Compiler
+---
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+## 📂 Project Structure
+```
+src/
+ ├── components/
+ │    ├── InputAdd.tsx      # Input component to add tasks
+ │    ├── TodoItems.tsx     # Component to render each task
+ │    └── List.tsx          # Wrapper for the task list
+ │
+ ├── shared/
+ │    └── services/
+ │         └── api/
+ │              └── TodoApi.ts # Axios service for API communication
+ │
+ ├── server.ts              # MirageJS server configuration
+ ├── App.tsx                # Main application component
+ └── main.tsx               # Application entry point
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚙️ Tech Stack
+- **React** (Hooks)  
+- **TypeScript**  
+- **Axios** for HTTP requests  
+- **MirageJS** for API mocking  
+- **localStorage** for simple persistence  
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
+---
+
+## 🛠️ MirageJS Setup
+The server is initialized in `server.ts`:
+
+```ts
+import { createServer, Model } from "miragejs";
+
+createServer({
+  models: {
+    todos: Model,
   },
-])
+  routes() {
+    this.namespace = "api";
 
+    this.get("/todos", (schema) => {
+      return { todos: schema.all("todos").models };
+    });
+
+    this.post("/todos", (schema, request) => {
+      const attrs = JSON.parse(request.requestBody);
+      return schema.create("todos", attrs);
+    });
+
+    this.put("/todos/:id", (schema, request) => {
+      const id = request.params.id;
+      const newAttrs = JSON.parse(request.requestBody);
+      const todo = schema.find("todos", id);
+      todo?.update(newAttrs);
+      return todo;
+    });
+
+    this.delete("/todos/:id", (schema, request) => {
+      const id = request.params.id;
+      const todo = schema.find("todos", id);
+      todo?.destroy();
+      return {};
+    });
+  },
+});
 ```
+
+⚠️ Important: `server.ts` must be imported in `main.tsx` **before** rendering the `App`.
+
+---
+
+## ▶️ Getting Started
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd <project-name>
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open in browser: `http://localhost:5173`
+
+---
+
+## 📌 Notes
+- MirageJS intercepts requests to `/api/todos`.  
+- Initial state is an empty array, but you can configure **seeds** to preload tasks.  
+- Project uses `import type` for types (`ITodo`) due to `verbatimModuleSyntax` in `tsconfig.json`.
