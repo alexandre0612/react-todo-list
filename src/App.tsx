@@ -18,16 +18,20 @@ export function App() {
   };
 
   const handleComplete = (id: string) => {
-    setList([
-      ...list.map((item) => ({
-        ...item,
-        complete: item.id === id ? true : item.complete,
-      })),
-    ]);
+    TodoAPI.updateById(id, { complete: true }).then(() => {
+      setList([
+        ...list.map((item) => ({
+          ...item,
+          complete: item.id === id ? true : item.complete,
+        })),
+      ]);
+    });
   };
 
   const handleDelete = (id: string) => {
-    setList([...list.filter((item) => item.id !== id)]);
+    TodoAPI.deleteById(id).then(() => {
+      setList([...list.filter((item) => item.id !== id)]);
+    });
   };
 
   return (
