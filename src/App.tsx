@@ -1,21 +1,20 @@
-import { useState } from "react";
-import { InputAdd } from "./components/ImputAdd";
+import { useEffect, useState } from "react";
+import { InputAdd } from "./components/InputAdd";
 import { TodoItems } from "./components/TodoItems";
 import { List } from "./components/List";
+import { TodoAPI, type ITodo } from "./shared/services/api/TodoApi";
 
 export function App() {
-  const [list, setList] = useState([
-    { id: "1", label: "Fazer café", complete: false },
-    { id: "2", label: "Fazer café", complete: false },
-    { id: "3", label: "Fazer almoço", complete: false },
-    { id: "4", label: "Fazer janta", complete: false },
-  ]);
+  const [list, setList] = useState<ITodo[]>([]);
+
+  useEffect(() => {
+    TodoAPI.getAll().then((data) => setList(data));
+  }, []);
 
   const handleAdd = (value: string) => {
-    setList([
-      ...list,
-      { id: (list.length + 1).toString(), label: value, complete: false },
-    ]);
+    TodoAPI.create({ label: value, complete: false }).then((data) =>
+      setList([...list, data]),
+    );
   };
 
   const handleComplete = (id: string) => {
@@ -36,15 +35,17 @@ export function App() {
       <InputAdd onAdd={handleAdd} />
 
       <List>
-        {list.map((listItem) => (
-          <TodoItems
-            id={listItem.id}
-            label={listItem.label}
-            complete={listItem.complete}
-            onComplete={() => handleComplete(listItem.id)}
-            onDelete={() => handleDelete(listItem.id)}
-          />
-        ))}
+        {Array.isArray(list) &&
+          list.map((listItem) => (
+            <TodoItems
+              key={listItem.id}
+              id={listItem.id}
+              label={listItem.label}
+              complete={listItem.complete}
+              onComplete={() => handleComplete(listItem.id)}
+              onDelete={() => handleDelete(listItem.id)}
+            />
+          ))}
       </List>
     </div>
   );

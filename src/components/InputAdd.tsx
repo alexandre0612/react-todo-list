@@ -7,7 +7,8 @@ export const InputAdd = (props: IInputAddProps) => {
   const [value, setValue] = useState("");
 
   const handleAdd = () => {
-    props.onAdd(value);
+    if (!value.trim()) return;
+    props.onAdd(value.trim());
     setValue("");
   };
 

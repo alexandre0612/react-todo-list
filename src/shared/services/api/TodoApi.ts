@@ -17,7 +17,7 @@ export const TodoAPI = {
   async getAll() {
     const response = await axiosInstance.get("/api/todos");
 
-    return response.data.todos as ITodo[];
+    return response.data as ITodo[];
   },
   async create(data: ITodoWithoutId) {
     const response = await axiosInstance.post("/api/todos", data);
